@@ -2,6 +2,7 @@ from pathlib import Path
 from app.report import plain,reason_counts
 from app.modules.m1_samples.rules import apply as stage1
 from app.modules.m2_contract.rules import apply as stage2
+from app.modules.m8_resubmit.rules import apply as stage8
 from app.modules.m3_parallel.rules import apply as stage3
 from app.modules.m4_spikes.rules import apply as stage4
 from app.modules.m5_blanks.rules import apply as stage5
@@ -15,6 +16,7 @@ def run(text):
     ctx={"text":text,"quarantine":[],"reports":[]}
     ctx["reports"].append(stage1(ctx))
     ctx["reports"].append(stage2(ctx))
+    ctx["reports"].append(stage8(ctx))
     ctx["reports"].append(stage3(ctx))
     ctx["reports"].append(stage4(ctx))
     ctx["reports"].append(stage5(ctx))

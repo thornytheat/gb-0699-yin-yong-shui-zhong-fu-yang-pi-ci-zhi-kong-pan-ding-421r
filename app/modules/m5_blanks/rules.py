@@ -6,5 +6,10 @@ def blank_check(value,mdl,censored=False):
     return "BLANK_FAIL" if value>mdl else "PASS"
 
 def apply(ctx):
-    out=[dict(id=r["id"],batch=r["batch"],analyte=r["analyte"],value_mg=r["value_mg"],mdl=LIMITS[r["analyte"]],status=blank_check(r["value_mg"],LIMITS[r["analyte"]],r["censored"]),line=r["line"]) for r in ctx["effective"] if r["kind"]=="blank"]
+    out=[dict(id=r["id"],physical_sample=r.get("physical_sample",r["id"]),
+              accept_aliases=r.get("accept_aliases",[r["id"]]),
+              batch=r["batch"],analyte=r["analyte"],value_mg=r["value_mg"],
+              mdl=LIMITS[r["analyte"]],
+              status=blank_check(r["value_mg"],LIMITS[r["analyte"]],r["censored"]),line=r["line"])
+         for r in ctx["effective"] if r["kind"]=="blank"]
     ctx["blank_checks"]=out;return report(out,空白样=len(out),污染=sum(r["status"]=="BLANK_FAIL" for r in out))

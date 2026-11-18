@@ -12,20 +12,22 @@ def decode(raw):
             continue
     raise BusinessError("ENCODING", "无法识别文件编码")
 
-def read_rows(text, fields):
+def read_rows(text, fields, optional=None):
+    optional=set(optional or ())
     if not text:
         raise BusinessError("EMPTY_FILE", "文件为空")
     if not text.strip():
         raise BusinessError("BLANK_FILE", "文件只有空行")
     if len(text.encode("utf-8")) > MAX_BYTES:
         raise BusinessError("SIZE", "文件超过2MB", 413)
-    rows = csv.reader(io.StringIO(text.lstrip("\ufeff")), strict=True)
+    rows = csv.reader(io.StringIO(text.lstrip("﻿")), strict=True)
     try:
         header = next(rows)
     except StopIteration:
         raise BusinessError("BLANK_FILE", "文件只有空行")
     header = [x.strip() for x in header]
-    if set(header) != set(fields) or len(header) != len(fields):
+    required=[f for f in fields if f not in optional]
+    if any(h not in fields for h in header) or any(f not in header for f in required) or len(header)!=len(set(header)):
         raise BusinessError("HEADER", "字段不匹配")
     accepted, rejected, blanks = [], [], 0
     try:
@@ -39,7 +41,10 @@ def read_rows(text, fields):
             elif len(cells) != len(header):
                 rejected.append({"line":line,"reason":"COLUMN_COUNT","raw":cells})
             else:
-                accepted.append(dict(zip(header, [x.strip() for x in cells]), line=line))
+                row=dict(zip(header, [x.strip() for x in cells]), line=line)
+                for name in optional:
+                    row.setdefault(name,"")
+                accepted.append(row)
     except csv.Error:
         raise BusinessError("CSV", "引号或换行结构错误")
     if not accepted and not rejected and not blanks:

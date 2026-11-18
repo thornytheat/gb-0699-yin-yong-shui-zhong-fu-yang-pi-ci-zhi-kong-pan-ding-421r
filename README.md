@@ -20,11 +20,21 @@ docker compose config --quiet
 
 - M1 样品接收：`/module/1`，独立计算 `POST /api/1`。
 - M2 检测项契约：`/module/2`，独立计算 `POST /api/2`。
-- M3 平行样核对：`/module/3`，独立计算 `POST /api/3`。
-- M4 加标回收：`/module/4`，独立计算 `POST /api/4`。
-- M5 空白污染：`/module/5`，独立计算 `POST /api/5`。
-- M6 批次放行：`/module/6`，独立计算 `POST /api/6`。
-- M7 复测追踪：`/module/7`，独立计算 `POST /api/7`。
+- M8 补送归并：`/module/3`，独立计算 `POST /api/8`。
+- M3 平行样核对：`/module/4`，独立计算 `POST /api/3`。
+- M4 加标回收：`/module/5`，独立计算 `POST /api/4`。
+- M5 空白污染：`/module/6`，独立计算 `POST /api/5`。
+- M6 批次放行：`/module/7`，独立计算 `POST /api/6`。
+- M7 复测追踪：`/module/8`，独立计算 `POST /api/7`。
+
+## 转瓶补送（M8）
+
+采样瓶转瓶补送会产生新受理号。CSV 可选列 `resubmit` 填写该补送记录所替代的原受理号（无补送可整列省略，旧文件直接兼容）。系统按检测批+检测项分域，用并查集把同一物理瓶的多个受理号并为一个物理样品：
+
+- 批次放行与各质控只采信每个物理样品的当前值（最高 `version`，同版本取最后确认行）；原受理号、原始行号、平行样证据全部保留可查，补送不会被重复算成独立质控。
+- 归并失败（目标受理号不存在 `RESUBMIT_TARGET_MISSING`、自引用 `RESUBMIT_SELF`、重复补送边 `RESUBMIT_DUPLICATE`、闭环 `RESUBMIT_CYCLE`、物理身份漂移 `RESUBMIT_IDENTITY_DRIFT`）逐边隔离且不执行该边合并，从最后确认的样品恢复为独立记录，不丢数据。
+- 同批补送重试按输入摘要幂等，不新增批次记录；迟到的低版本补送不会把当前结论退回。
+- 页面与证据导出同时呈现新受理号、原受理号（`accept_aliases`）与当前值。带补送的样例见 `sample_data/instrument-resubmit.csv`。
 
 ## 输入与输出
 

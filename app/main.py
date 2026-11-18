@@ -13,9 +13,11 @@ app=FastAPI(title='饮用水重复样与批次质控判定')
 app.mount("/static",StaticFiles(directory=Path(__file__).parent/"static"),name="static")
 templates=Jinja2Templates(directory=Path(__file__).parent/"templates")
 templates.env.filters["display_number"]=display_number
-MODULES=['样品接收', '检测项契约', '平行样核对', '加标回收', '空白污染', '批次放行', '复测追踪']
-for n,slug in enumerate(['samples', 'contract', 'parallel', 'spikes', 'blanks', 'release', 'retest'],1):
-    app.include_router(importlib.import_module(f"app.modules.m{n}_{slug}.handler").router)
+templates.env.filters["display_value"]=lambda value: " / ".join(map(str,value)) if isinstance(value,(list,tuple)) else value
+MODULES=['样品接收', '检测项契约', '补送归并', '平行样核对', '加标回收', '空白污染', '批次放行', '复测追踪']
+MODULE_PATHS=['m1_samples','m2_contract','m8_resubmit','m3_parallel','m4_spikes','m5_blanks','m6_release','m7_retest']
+for n,path in enumerate(MODULE_PATHS,1):
+    app.include_router(importlib.import_module(f"app.modules.{path}.handler").router)
 @app.exception_handler(BusinessError)
 async def domain_error(request,exc):
     return JSONResponse({"error":exc.code,"message":str(exc)},status_code=exc.status)
@@ -25,7 +27,7 @@ def health(): return {"status":"ok"}
 def home(request:Request): return page(request,1)
 @app.get("/module/{module}",response_class=HTMLResponse)
 def page(request:Request,module:int):
-    if module not in range(1,8): raise BusinessError("MODULE","模块不存在",404)
+    if module not in range(1,9): raise BusinessError("MODULE","模块不存在",404)
     ident=request.query_params.get("run_id")
     item=store.get(ident) if ident else store.save(sample_text(),run(sample_text()))
     return templates.TemplateResponse(request=request,name="workbench.html",context={"title":'饮用水重复样与批次质控判定',"modules":MODULES,"active":module,"run":item,"report":item["result"]["reports"][module-1]})

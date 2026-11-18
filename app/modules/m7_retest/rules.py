@@ -9,5 +9,9 @@ def apply(ctx):
     out=[]
     for r in ctx["effective"]:
         if (r["batch"],r["analyte"]) in failed:
-            out.append({"id":r["id"],"batch":r["batch"],"analyte":r["analyte"],"kind":r["kind"],"current_version":r["rev"],"required_version":next_version(r["rev"],r["rev"]+1),"status":"RETEST","line":r["line"]})
+            out.append({"id":r["id"],"physical_sample":r.get("physical_sample",r["id"]),
+                        "original_id":r.get("original_id",""),"accept_aliases":r.get("accept_aliases",[r["id"]]),
+                        "batch":r["batch"],"analyte":r["analyte"],"kind":r["kind"],
+                        "current_version":r["rev"],"required_version":next_version(r["rev"],r["rev"]+1),
+                        "status":"RETEST","line":r["line"]})
     ctx["final"]=out;return report(out,复测任务=len(out),有效样品=len(ctx["effective"]))

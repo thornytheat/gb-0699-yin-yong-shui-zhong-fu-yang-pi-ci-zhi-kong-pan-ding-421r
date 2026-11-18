@@ -27,5 +27,7 @@ def apply(ctx):
             if x["rev"]<1:raise BusinessError("VERSION","版本须大于零")
             out.append(x)
         except (BusinessError,ValueError) as e:quarantine(ctx,r,getattr(e,"code","VERSION"))
-    ctx["normalized"]=out;ctx["effective"]=latest(out)
-    return report(ctx["effective"],有效=len(ctx["effective"]),历史=len(out)-len(ctx["effective"]),单位="mg/L")
+    ctx["normalized"]=out
+    effective=latest(out)
+    ctx["effective"]=effective
+    return report(effective,有效=len(effective),历史=len(out)-len(effective),单位="mg/L")

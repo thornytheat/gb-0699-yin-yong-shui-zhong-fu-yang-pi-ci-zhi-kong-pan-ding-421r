@@ -9,6 +9,7 @@
 |---|---|---|---|---|
 | M1 样品接收 | 运行样品接收并核对证据 | `POST /api/1` | `app/modules/m1_samples/rules.py` | `tests/test_samples.py` |
 | M2 检测项契约 | 运行检测项契约并核对证据 | `POST /api/2` | `app/modules/m2_contract/rules.py` | `tests/test_contract.py` |
+| M8 补送归并 | 关联两类受理号并按物理样品归并 | `POST /api/8` | `app/modules/m8_resubmit/rules.py` | `tests/test_resubmit.py` |
 | M3 平行样核对 | 运行平行样核对并核对证据 | `POST /api/3` | `app/modules/m3_parallel/rules.py` | `tests/test_parallel.py` |
 | M4 加标回收 | 运行加标回收并核对证据 | `POST /api/4` | `app/modules/m4_spikes/rules.py` | `tests/test_spikes.py` |
 | M5 空白污染 | 运行空白污染并核对证据 | `POST /api/5` | `app/modules/m5_blanks/rules.py` | `tests/test_blanks.py` |
@@ -27,6 +28,7 @@
 | TRAP-15 | ug与mg | 静默采信错误值 | 统一mg/L | `app/modules/m2_contract/rules.py` | `tests/test_contract.py::test_contract_unit` |
 | TRAP-19 | 多质控失败 | 静默采信错误值 | 明确优先级 | `app/modules/m6_release/rules.py` | `tests/test_release.py::test_release_priority` |
 | TRAP-26 | 陈旧复测 | 静默采信错误值 | 版本递增 | `app/modules/m7_retest/rules.py` | `tests/test_retest.py::test_retest_stale` |
+| TRAP-30 | 转瓶补送新受理号 | 按新号覆盖则补送重复算成独立质控；全部合并又与采样瓶脱节 | 并查集按物理样品归并，保留双号与原始行，失败边隔离恢复 | `app/modules/m8_resubmit/rules.py` | `tests/test_resubmit.py` |
 
 ## 对账规则
 
